@@ -20,6 +20,10 @@ class MainFragment : Fragment() {
 
         binding.viewModel = viewModel
 
+        // Sets the adapter of the photosGrid RecyclerView with clickHandler lambda that
+        // tells the viewModel when our property is clicked
+        binding.asteroidRecycler.adapter = AsteroidListingAdapter()
+
         setHasOptionsMenu(true)
 
         return binding.root
