@@ -1,33 +1,26 @@
 package com.udacity.asteroidradar.main
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.udacity.asteroidradar.Asteroid
+import android.app.Application
+import androidx.lifecycle.*
+import com.udacity.asteroidradar.domain.Asteroid
 import com.udacity.asteroidradar.Constants
 import com.udacity.asteroidradar.PictureOfDay
 import com.udacity.asteroidradar.api.NasaApi
-import com.udacity.asteroidradar.api.parseAsteroidsJsonResult
+import com.udacity.asteroidradar.database.getDatabase
+import com.udacity.asteroidradar.repository.AsteroidRepository
 import kotlinx.coroutines.launch
-import org.json.JSONObject
-import timber.log.Timber
 
-class MainViewModel : ViewModel() {
 
-    // Internally, we use a MutableLiveData, because we will be updating the List of Asteroids
-    // with new values
-    private val _asteroids = MutableLiveData<List<Asteroid>>()
+class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    // The external LiveData interface to the property is immutable, so only this class can modify
-    val asteroids: LiveData<List<Asteroid>>
-        get() = _asteroids
+    private val database = getDatabase(application)
+    private val asteroidsRepository = AsteroidRepository(database)
 
+    val asteroids = asteroidsRepository.asteroids
 
     private val _pictureOfDay = MutableLiveData<PictureOfDay>()
     val pictureOfDay: LiveData<PictureOfDay>
         get() = _pictureOfDay
-
 
     /**
      * If this is non-null, immediately navigate to [DetailFragment] and call [doneNavigating]
@@ -36,7 +29,6 @@ class MainViewModel : ViewModel() {
 
     val navigateToDetail: LiveData<Asteroid>
         get() = _navigateToDetail
-
 
     /**
      * Call this immediately after navigating to [DetailFragment]
@@ -51,32 +43,15 @@ class MainViewModel : ViewModel() {
         _navigateToDetail.value = asteroid
     }
 
-
     /**
-     * Call getAsteroids() on init so we can display immediately.
+     * init{} is called immediately when this ViewModel is created.
      */
     init {
-        getAsteroids()
-        getPictureOfDay()
-    }
-
-    /**
-     * Gets Asteroids from the Nasa API Retrofit service and
-     * updates the [Asteroid] [List]. The Retrofit service
-     * returns a coroutine Deferred, which we await to get the result of the transaction.
-     */
-    private fun getAsteroids() {
         viewModelScope.launch {
-            try {
-                val stringResponse = NasaApi.retrofitScalarService.getFeed(
-                    apiKey = Constants.API_KEY, startDate = null , endDate = null)
-                Timber.d("The results are $stringResponse")
-                _asteroids.value = parseAsteroidsJsonResult(JSONObject(stringResponse))
-            } catch (e: Exception) {
-                Timber.e("Got exception $e")
-                _asteroids.value = ArrayList()
-            }
+            asteroidsRepository.refreshAsteroids()
         }
+        getPictureOfDay()
+
     }
 
     /**
@@ -90,6 +65,19 @@ class MainViewModel : ViewModel() {
             } catch (e: Exception) {
                 _pictureOfDay.value = null
             }
+        }
+    }
+
+    /**
+     * Factory for constructing MainViewModel with parameter (application)
+     */
+    class Factory(val app: Application) : ViewModelProvider.Factory {
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return MainViewModel(app) as T
+            }
+            throw IllegalArgumentException("Unable to construct viewmodel")
         }
     }
 

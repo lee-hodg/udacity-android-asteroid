@@ -2,7 +2,7 @@ package com.udacity.asteroidradar.api
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.udacity.asteroidradar.Asteroid
+import com.udacity.asteroidradar.domain.Asteroid
 import retrofit2.Retrofit
 import com.udacity.asteroidradar.Constants
 import com.udacity.asteroidradar.PictureOfDay
@@ -50,7 +50,7 @@ interface NasaApiService {
      * requested with the GET HTTP method
      */
     @GET("neo/rest/v1/feed")
-    suspend fun getFeed(@Query("start_date") startDate: String?,
+    suspend fun getAsteroids(@Query("start_date") startDate: String?,
                         @Query("end_date") endDate: String?,
                         @Query("api_key") apiKey: String): String
 
