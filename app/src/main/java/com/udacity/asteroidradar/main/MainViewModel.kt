@@ -30,6 +30,29 @@ class MainViewModel : ViewModel() {
 
 
     /**
+     * If this is non-null, immediately navigate to [DetailFragment] and call [doneNavigating]
+     */
+    private val _navigateToDetail = MutableLiveData<Asteroid>()
+
+    val navigateToDetail: LiveData<Asteroid>
+        get() = _navigateToDetail
+
+
+    /**
+     * Call this immediately after navigating to [DetailFragment]
+     * It will clear the navigation request, so if the user rotates their phone it won't navigate
+     * twice.
+     */
+    fun doneNavigating() {
+        _navigateToDetail.value = null
+    }
+
+    fun onAsteroidClicked(asteroid: Asteroid) {
+        _navigateToDetail.value = asteroid
+    }
+
+
+    /**
      * Call getAsteroids() on init so we can display immediately.
      */
     init {

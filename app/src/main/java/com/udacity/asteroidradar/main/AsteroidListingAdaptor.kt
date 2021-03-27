@@ -14,7 +14,7 @@ import timber.log.Timber
  * This class implements a [RecyclerView] [ListAdapter] which uses Data Binding to present [List]
  * data, including computing diffs between lists.
  */
-class AsteroidListingAdapter() :
+class AsteroidListingAdapter(val clickListener: AsteroidListener) :
     ListAdapter<Asteroid, AsteroidListingAdapter.AsteroidViewHolder>(DiffCallback) {
     /**
      * The AsteroidViewHolder constructor takes the binding variable from the associated
@@ -22,8 +22,9 @@ class AsteroidListingAdapter() :
      */
     class AsteroidViewHolder(private var binding: ListViewItemBinding):
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(asteroid: Asteroid) {
+        fun bind(clickListener: AsteroidListener, asteroid: Asteroid) {
             binding.asteroid = asteroid
+            binding.clickListener = clickListener
             // This is important, because it forces the data binding to execute immediately,
             // which allows the RecyclerView to make the correct view size measurements
             binding.executePendingBindings()
@@ -59,7 +60,12 @@ class AsteroidListingAdapter() :
     override fun onBindViewHolder(holder: AsteroidViewHolder, position: Int) {
         val asteroid = getItem(position)
         Timber.d("Binding asteroid with id $asteroid.id")
-        holder.bind(asteroid)
+        holder.bind(clickListener, asteroid)
     }
 
+}
+
+
+class AsteroidListener(val clickListener: (asteroid: Asteroid) -> Unit) {
+    fun onClick(asteroid: Asteroid) = clickListener(asteroid)
 }

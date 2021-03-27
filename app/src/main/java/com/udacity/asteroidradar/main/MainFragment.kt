@@ -3,7 +3,9 @@ package com.udacity.asteroidradar.main
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.udacity.asteroidradar.R
 import com.udacity.asteroidradar.databinding.FragmentMainBinding
 
@@ -20,11 +22,22 @@ class MainFragment : Fragment() {
 
         binding.viewModel = viewModel
 
-        // Sets the adapter of the photosGrid RecyclerView with clickHandler lambda that
-        // tells the viewModel when our property is clicked
-        binding.asteroidRecycler.adapter = AsteroidListingAdapter()
+        // Sets the adapter of the  RecyclerView with clickHandler lambda that
+        // tells the viewModel when our asteroid is clicked
+        val adapter = AsteroidListingAdapter(AsteroidListener { asteroid ->
+            viewModel.onAsteroidClicked(asteroid)
+        })
+        binding.asteroidRecycler.adapter = adapter
 
         setHasOptionsMenu(true)
+
+        viewModel.navigateToDetail.observe(viewLifecycleOwner, Observer { asteroid ->
+            asteroid?.let {
+                this.findNavController().navigate(
+                        MainFragmentDirections.actionShowDetail(asteroid))
+                viewModel.doneNavigating()
+            }
+        })
 
         return binding.root
     }
