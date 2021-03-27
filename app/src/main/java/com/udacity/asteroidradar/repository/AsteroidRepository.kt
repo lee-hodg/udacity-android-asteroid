@@ -9,6 +9,7 @@ import com.udacity.asteroidradar.api.parseAsteroidsJsonResult
 import com.udacity.asteroidradar.database.AsteroidDatabase
 import com.udacity.asteroidradar.database.asDomainModel
 import com.udacity.asteroidradar.domain.Asteroid
+import com.udacity.asteroidradar.domain.PictureOfDay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -30,6 +31,27 @@ class AsteroidRepository(private val database: AsteroidDatabase) {
             Transformations.map(database.asteroidDao.getAsteroids()) {
                 it.asDomainModel()
             }
+
+    val pictureOfDay: LiveData<PictureOfDay> = Transformations.map(
+            database.asteroidDao.getPictureOfDay()){ it?.asDomainModel() }
+
+    /**
+     * Refresh the picture of the day in the offline cache
+     */
+    suspend fun refreshPictureOfDay(){
+        withContext(Dispatchers.IO){
+            try {
+
+                Timber.d("Request new pictureOfDay...")
+                val pictureOfDay = NasaApi.retrofitMoshiService.getPictureOfDay(
+                        apiKey = Constants.API_KEY)
+                // convert them to array of DatabaseAsteroids and insert all
+                database.asteroidDao.insertPictureOfDay(pictureOfDay.asDatabaseModel())
+            } catch (e: Exception) {
+                Timber.e("Got exception when refreshing picture of day: $e")
+            }
+        }
+    }
 
     /**
      * Refresh the asteroids stored in the offline cache.

@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.lifecycle.*
 import com.udacity.asteroidradar.domain.Asteroid
 import com.udacity.asteroidradar.Constants
-import com.udacity.asteroidradar.PictureOfDay
+import com.udacity.asteroidradar.domain.PictureOfDay
 import com.udacity.asteroidradar.api.NasaApi
 import com.udacity.asteroidradar.database.getDatabase
 import com.udacity.asteroidradar.repository.AsteroidRepository
@@ -18,9 +18,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val asteroids = asteroidsRepository.asteroids
 
-    private val _pictureOfDay = MutableLiveData<PictureOfDay>()
-    val pictureOfDay: LiveData<PictureOfDay>
-        get() = _pictureOfDay
+    val pictureOfDay = asteroidsRepository.pictureOfDay
 
     /**
      * If this is non-null, immediately navigate to [DetailFragment] and call [doneNavigating]
@@ -50,22 +48,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             asteroidsRepository.refreshAsteroids()
         }
-        getPictureOfDay()
-
-    }
-
-    /**
-     * Get the picture of the the day to display on the main view
-     */
-    private fun getPictureOfDay() {
         viewModelScope.launch {
-            try {
-                _pictureOfDay.value = NasaApi.retrofitMoshiService.getPictureOfDay(
-                    apiKey = Constants.API_KEY)
-            } catch (e: Exception) {
-                _pictureOfDay.value = null
-            }
+            asteroidsRepository.refreshPictureOfDay()
         }
+
     }
 
     /**
