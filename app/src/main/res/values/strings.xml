@@ -22,4 +22,6 @@
     <string name="asteroid_status_icon">Asteroid Hazard Status</string>
     <string name="hazardous_description">Hazardous Asteroid Image</string>
     <string name="not_hazardous_description">Cute Harmless Asteroid Image</string>
+    <string name="help_button_text">More info about the units</string>
+    <string name="caption_content_description">Caption under the main image</string>
 </resources>

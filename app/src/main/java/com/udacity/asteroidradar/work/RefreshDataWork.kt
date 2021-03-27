@@ -30,6 +30,8 @@ class RefreshDataWorker(appContext: Context, params: WorkerParameters):
         return try {
             repository.refreshAsteroids()
             repository.refreshPictureOfDay()
+            repository.clearOldAsteroids()
+            repository.clearOldPictureOfDay()
             Result.success()
         } catch (e: HttpException) {
             Result.retry()

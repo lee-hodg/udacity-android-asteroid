@@ -29,7 +29,7 @@
                 android:layout_height="match_parent"
                 android:adjustViewBounds="true"
                 android:scaleType="centerCrop"
-                android:contentDescription="@{viewModel.pictureOfDay.title}"
+                android:contentDescription="Image of @{viewModel.pictureOfDay.title}"
                 app:imageUrl="@{viewModel.pictureOfDay.url}"
                 tools:src="@tools:sample/backgrounds/scenic"/>
 
@@ -43,7 +43,7 @@
                 android:textSize="20sp"
                 android:layout_gravity="bottom"
                 android:background="#55010613"
-                android:contentDescription="@{viewModel.pictureOfDay.title}"
+                android:contentDescription="@string/caption_content_description"
                 android:text="@{viewModel.pictureOfDay.title}"
                 tools:text="@string/image_of_the_day" />
         </FrameLayout>

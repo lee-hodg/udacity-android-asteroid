@@ -20,6 +20,12 @@ interface AsteroidDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPictureOfDay(pictureOfDay: DatabasePictureOfDay)
 
+    @Query("delete from databaseasteroid where closeApproachDate < :today")
+    fun clearOldAsteroids(today: String)
+
+    @Query("delete from databasepictureofday where created_at < :today")
+    fun clearOldPictureOfDay(today: String)
+
 //    fun insertPictureOfDayWithTimestamp(pictureOfDay: DatabasePictureOfDay) {
 //        insertPictureOfDay(pictureOfDay.apply{
 //            this.createdAt = System.currentTimeMillis()
