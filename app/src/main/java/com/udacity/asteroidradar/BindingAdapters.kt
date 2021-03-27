@@ -18,6 +18,17 @@ fun bindAsteroidStatusImage(imageView: ImageView, isHazardous: Boolean) {
     }
 }
 
+@BindingAdapter("statusIconContentDescription")
+fun bindAsteroidStatusImageContentDescription(imageView: ImageView, isHazardous: Boolean) {
+    val context = imageView.context
+    if (isHazardous) {
+        imageView.contentDescription = String.format(context.getString(R.string.hazardous_description))
+    } else {
+        imageView.contentDescription = String.format(context.getString(R.string.not_hazardous_description))
+    }
+}
+
+
 @BindingAdapter("asteroidStatusImage")
 fun bindDetailsStatusImage(imageView: ImageView, isHazardous: Boolean) {
     if (isHazardous) {
@@ -27,22 +38,37 @@ fun bindDetailsStatusImage(imageView: ImageView, isHazardous: Boolean) {
     }
 }
 
+
+@BindingAdapter("asteroidStatusImageContentDescription")
+fun bindDetailsStatusImageContentDescription(imageView: ImageView, isHazardous: Boolean) {
+    val context = imageView.context
+    if (isHazardous) {
+        imageView.contentDescription = String.format(context.getString(R.string.hazardous_description))
+    } else {
+        imageView.contentDescription = String.format(context.getString(R.string.not_hazardous_description))
+    }
+}
+
+
 @BindingAdapter("astronomicalUnitText")
 fun bindTextViewToAstronomicalUnit(textView: TextView, number: Double) {
     val context = textView.context
     textView.text = String.format(context.getString(R.string.astronomical_unit_format), number)
+    textView.contentDescription = String.format(context.getString(R.string.astronomical_unit_format), number)
 }
 
 @BindingAdapter("kmUnitText")
 fun bindTextViewToKmUnit(textView: TextView, number: Double) {
     val context = textView.context
     textView.text = String.format(context.getString(R.string.km_unit_format), number)
+    textView.contentDescription = String.format(context.getString(R.string.km_unit_format), number)
 }
 
 @BindingAdapter("velocityText")
 fun bindTextViewToDisplayVelocity(textView: TextView, number: Double) {
     val context = textView.context
     textView.text = String.format(context.getString(R.string.km_s_unit_format), number)
+    textView.contentDescription = String.format(context.getString(R.string.km_s_unit_format), number)
 }
 
 

@@ -13,6 +13,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import timber.log.Timber
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 //import java.time.LocalDateTime
 //import java.time.format.DateTimeFormatter
 
@@ -40,16 +43,16 @@ class AsteroidRepository(private val database: AsteroidDatabase) {
     suspend fun refreshAsteroids() {
         withContext(Dispatchers.IO) {
             try {
-//                val currentDate = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE)
-//                Timber.d("Request new asteroids w/ startDate $currentDate")
+                val currentDate = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE)
+                Timber.d("Request new asteroids w/ startDate $currentDate")
                 val stringResponse = NasaApi.retrofitScalarService.getAsteroids(
-                        apiKey = Constants.API_KEY, startDate = null , endDate = null)
-                //Timber.d("The results from start $currentDate are $stringResponse")
+                        apiKey = Constants.API_KEY, startDate = currentDate , endDate = null)
+                Timber.d("The results from start $currentDate are $stringResponse")
                 val networkAsteroids = parseAsteroidsJsonResult(JSONObject(stringResponse))
                 // convert them to array of DatabaseAsteroids and insert all
                 database.asteroidDao.insertAll(*networkAsteroids.asDatabaseModel())
             } catch (e: Exception) {
-                Timber.e("Got exception $e")
+                Timber.e("Got exception when refreshing asteroids: $e")
             }
         }
     }
