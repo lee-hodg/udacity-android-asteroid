@@ -11,6 +11,7 @@ import com.udacity.asteroidradar.api.NasaApi
 import com.udacity.asteroidradar.api.parseAsteroidsJsonResult
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import timber.log.Timber
 
 class MainViewModel : ViewModel() {
 
@@ -44,10 +45,12 @@ class MainViewModel : ViewModel() {
     private fun getAsteroids() {
         viewModelScope.launch {
             try {
-                _asteroids.value = parseAsteroidsJsonResult(
-                    JSONObject(NasaApi.retrofitScalarService.getFeed(apiKey = Constants.API_KEY,
-                    startDate = null , endDate = null)))
+                val stringResponse = NasaApi.retrofitScalarService.getFeed(
+                    apiKey = Constants.API_KEY, startDate = null , endDate = null)
+                Timber.d("The results are $stringResponse")
+                _asteroids.value = parseAsteroidsJsonResult(JSONObject(stringResponse))
             } catch (e: Exception) {
+                Timber.e("Got exception $e")
                 _asteroids.value = ArrayList()
             }
         }

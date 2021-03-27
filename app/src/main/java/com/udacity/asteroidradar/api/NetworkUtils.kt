@@ -2,7 +2,10 @@ package com.udacity.asteroidradar.api
 
 import com.udacity.asteroidradar.Asteroid
 import com.udacity.asteroidradar.Constants
+import org.json.JSONArray
 import org.json.JSONObject
+import timber.log.Timber
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -16,8 +19,16 @@ fun parseAsteroidsJsonResult(jsonResult: JSONObject): ArrayList<Asteroid> {
 
     val nextSevenDaysFormattedDates = getNextSevenDaysFormattedDates()
     for (formattedDate in nextSevenDaysFormattedDates) {
+        val dateAsteroidJsonArray: JSONArray
+
         // each is keyed by the date in the response and is a bunch of asteroids that date
-        val dateAsteroidJsonArray = nearEarthObjectsJson.getJSONArray(formattedDate)
+        // but occassionally the date doesn't exist so handle the exception and skip
+        try {
+            dateAsteroidJsonArray = nearEarthObjectsJson.getJSONArray(formattedDate)
+        } catch(e: Exception){
+            Timber.d("Could not get $formattedDate so skip...")
+            continue
+        }
 
         for (i in 0 until dateAsteroidJsonArray.length()) {
             val asteroidJson = dateAsteroidJsonArray.getJSONObject(i)

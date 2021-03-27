@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.udacity.asteroidradar.Asteroid
 import com.udacity.asteroidradar.databinding.ListViewItemBinding
+import timber.log.Timber
 
 
 /**
@@ -57,6 +58,7 @@ class AsteroidListingAdapter() :
      */
     override fun onBindViewHolder(holder: AsteroidViewHolder, position: Int) {
         val asteroid = getItem(position)
+        Timber.d("Binding asteroid with id $asteroid.id")
         holder.bind(asteroid)
     }
 
