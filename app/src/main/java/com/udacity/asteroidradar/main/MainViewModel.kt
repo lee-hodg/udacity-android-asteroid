@@ -3,12 +3,11 @@ package com.udacity.asteroidradar.main
 import android.app.Application
 import androidx.lifecycle.*
 import com.udacity.asteroidradar.domain.Asteroid
-import com.udacity.asteroidradar.Constants
-import com.udacity.asteroidradar.domain.PictureOfDay
-import com.udacity.asteroidradar.api.NasaApi
+import com.udacity.asteroidradar.api.AsteroidApiFilter
 import com.udacity.asteroidradar.database.getDatabase
 import com.udacity.asteroidradar.repository.AsteroidRepository
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -16,7 +15,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val database = getDatabase(application)
     private val asteroidsRepository = AsteroidRepository(database)
 
-    val asteroids = asteroidsRepository.asteroids
+    var asteroids = asteroidsRepository.asteroids
 
     val pictureOfDay = asteroidsRepository.pictureOfDay
 
@@ -41,6 +40,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _navigateToDetail.value = asteroid
     }
 
+    fun doFilter(filter: AsteroidApiFilter?) {
+        Timber.d("Do the filter with ${filter.toString()}")
+        when(filter){
+            AsteroidApiFilter.SHOW_WEEK -> {
+                asteroids = asteroidsRepository.weeklyAsteroids
+            }
+            AsteroidApiFilter.SHOW_SAVED -> {
+                asteroids = asteroidsRepository.asteroids
+            }
+            AsteroidApiFilter.SHOW_TODAY -> {
+                asteroids = asteroidsRepository.todayAsteroids
+            }
+        }
+
+    }
+
+    /**
+     * This is the overflow menu filter. Start by showing all saved
+     */
+    private val _filterSelected = MutableLiveData<AsteroidApiFilter>(AsteroidApiFilter.SHOW_SAVED)
+    val filterSelected: LiveData<AsteroidApiFilter>
+        get() = _filterSelected
+
     /**
      * init{} is called immediately when this ViewModel is created.
      */
@@ -52,6 +74,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             asteroidsRepository.refreshPictureOfDay()
         }
 
+    }
+
+    // this will be observed in the fragment and cause doFilter to run, which in turn
+    // modifies which source of asteroids from the repository are used
+    fun updateFilter(filter: AsteroidApiFilter) {
+        Timber.d("Update _filterSelected with ${filter.toString()}")
+        _filterSelected.value = filter
     }
 
     /**

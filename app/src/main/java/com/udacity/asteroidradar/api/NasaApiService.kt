@@ -5,11 +5,16 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.udacity.asteroidradar.domain.Asteroid
 import retrofit2.Retrofit
 import com.udacity.asteroidradar.Constants
-import com.udacity.asteroidradar.domain.PictureOfDay
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
+
+// enum for us with options overflow menu
+enum class AsteroidApiFilter(val value: String) {
+    SHOW_WEEK("week"), SHOW_TODAY("today"), SHOW_SAVED("saved")
+}
+
 
 
 /**
@@ -41,7 +46,7 @@ private val retrofit_moshi = Retrofit.Builder()
 
 
 /**
- * A public interface that exposes the [getProperties] method
+ * A public interface that exposes the [getAsteroids] method
  */
 interface NasaApiService {
     /**

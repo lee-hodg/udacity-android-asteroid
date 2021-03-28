@@ -2,6 +2,7 @@ package com.udacity.asteroidradar.main
 
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -9,7 +10,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.udacity.asteroidradar.R
+import com.udacity.asteroidradar.api.AsteroidApiFilter
 import com.udacity.asteroidradar.databinding.FragmentMainBinding
+import timber.log.Timber
 
 
 class MainFragment : Fragment() {
@@ -27,7 +30,7 @@ class MainFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+                              savedInstanceState: Bundle?): View {
         val binding = FragmentMainBinding.inflate(inflater)
         binding.lifecycleOwner = this
 
@@ -45,7 +48,6 @@ class MainFragment : Fragment() {
         itemDecorator.setDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.divider)!!)
         binding.asteroidRecycler.addItemDecoration(itemDecorator)
 
-
         setHasOptionsMenu(true)
 
         viewModel.navigateToDetail.observe(viewLifecycleOwner, Observer { asteroid ->
@@ -56,15 +58,33 @@ class MainFragment : Fragment() {
             }
         })
 
+        // If the filterSelected changes update the source of androids from repository
+        viewModel.filterSelected.observe(viewLifecycleOwner, Observer { filter ->
+            viewModel.doFilter(filter)
+        })
+
         return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        Timber.d("Create options menu")
         inflater.inflate(R.menu.main_overflow_menu, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+    /**
+     * Updates the filter in the when the menu items are selected from the
+     * overflow menu.
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        Timber.d("menu item with id ${item.itemId} was selected...")
+        viewModel.updateFilter(
+                when (item.itemId) {
+                    R.id.show_saved_menu -> AsteroidApiFilter.SHOW_SAVED
+                    R.id.show_today_menu -> AsteroidApiFilter.SHOW_TODAY
+                    else -> AsteroidApiFilter.SHOW_WEEK
+                }
+        )
         return true
     }
 }

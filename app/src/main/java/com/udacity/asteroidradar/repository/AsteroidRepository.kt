@@ -1,6 +1,7 @@
 package com.udacity.asteroidradar.repository
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import com.udacity.asteroidradar.Constants
 import com.udacity.asteroidradar.api.NasaApi
@@ -14,13 +15,23 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import timber.log.Timber
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.*
 
-//import java.time.LocalDateTime
-//import java.time.format.DateTimeFormatter
+
+fun getFormattedDate(days: Int=0): String{
+    val calendar = Calendar.getInstance()
+    if(days > 0){
+        calendar.add(Calendar.DAY_OF_YEAR, days)
+    }
+    val currentTime = calendar.time
+    val dateFormat = SimpleDateFormat(Constants.API_QUERY_DATE_FORMAT, Locale.getDefault())
+    return dateFormat.format(currentTime)
+}
+
 
 class AsteroidRepository(private val database: AsteroidDatabase) {
+
 
     /**
      * A list of asteroids (we get them from the database, but transform into
@@ -28,9 +39,11 @@ class AsteroidRepository(private val database: AsteroidDatabase) {
      * This is the DatabaseAsteroid to domainModel ext func
      */
     val asteroids: LiveData<List<Asteroid>> =
-            Transformations.map(database.asteroidDao.getAsteroids()) {
-                it.asDomainModel()
-            }
+            Transformations.map(database.asteroidDao.getAsteroids()){ it.asDomainModel()}
+    val todayAsteroids: LiveData<List<Asteroid>> =
+            Transformations.map(database.asteroidDao.getTodayAsteroids()){ it.asDomainModel()}
+    val weeklyAsteroids: LiveData<List<Asteroid>> =
+            Transformations.map(database.asteroidDao.getWeeklyAsteroids()){ it.asDomainModel()}
 
     val pictureOfDay: LiveData<PictureOfDay> = Transformations.map(
             database.asteroidDao.getPictureOfDay()){ it?.asDomainModel() }
@@ -65,11 +78,11 @@ class AsteroidRepository(private val database: AsteroidDatabase) {
     suspend fun refreshAsteroids() {
         withContext(Dispatchers.IO) {
             try {
-                val currentDate = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE)
-                Timber.d("Request new asteroids w/ startDate $currentDate")
+                val today = getFormattedDate()
+                Timber.d("Request new asteroids w/ startDate $today")
                 val stringResponse = NasaApi.retrofitScalarService.getAsteroids(
-                        apiKey = Constants.API_KEY, startDate = currentDate , endDate = null)
-                Timber.d("The results from start $currentDate are $stringResponse")
+                        apiKey = Constants.API_KEY, startDate = today , endDate = null)
+                Timber.d("The results from start $today are $stringResponse")
                 val networkAsteroids = parseAsteroidsJsonResult(JSONObject(stringResponse))
                 // convert them to array of DatabaseAsteroids and insert all
                 database.asteroidDao.insertAll(*networkAsteroids.asDatabaseModel())
@@ -83,7 +96,7 @@ class AsteroidRepository(private val database: AsteroidDatabase) {
         withContext(Dispatchers.IO) {
             try {
                 Timber.d("Clear old asteroids...")
-                val today = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE)
+                val today = getFormattedDate()
                 database.asteroidDao.clearOldAsteroids(today)
             } catch (e: Exception) {
                 Timber.e("Got exception when clearing old asteroids: $e")
@@ -95,7 +108,7 @@ class AsteroidRepository(private val database: AsteroidDatabase) {
         withContext(Dispatchers.IO) {
             try {
                 Timber.d("Clear old picture of day...")
-                val today = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE)
+                val today = getFormattedDate()
                 database.asteroidDao.clearOldPictureOfDay(today)
             } catch (e: Exception) {
                 Timber.e("Got exception when clearing old picture of day: $e")

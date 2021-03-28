@@ -3,11 +3,17 @@ package com.udacity.asteroidradar.database
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.udacity.asteroidradar.domain.PictureOfDay
+
 
 @Dao
 interface AsteroidDao {
-    @Query("select * from databaseasteroid order by closeApproachDate asc")
+    @Query("SELECT * FROM databaseasteroid WHERE closeApproachDate = date('now') order by closeApproachDate asc")
+    fun getTodayAsteroids(): LiveData<List<DatabaseAsteroid>>
+
+    @Query("SELECT * FROM databaseasteroid WHERE closeApproachDate BETWEEN date('now') AND date('now', '+7 day') order by closeApproachDate asc")
+    fun getWeeklyAsteroids(): LiveData<List<DatabaseAsteroid>>
+
+    @Query("select * from databaseasteroid  order by closeApproachDate asc")
     fun getAsteroids(): LiveData<List<DatabaseAsteroid>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -26,11 +32,6 @@ interface AsteroidDao {
     @Query("delete from databasepictureofday where created_at < :today")
     fun clearOldPictureOfDay(today: String)
 
-//    fun insertPictureOfDayWithTimestamp(pictureOfDay: DatabasePictureOfDay) {
-//        insertPictureOfDay(pictureOfDay.apply{
-//            this.createdAt = System.currentTimeMillis()
-//        })
-//    }
 }
 
 @Database(entities = [DatabaseAsteroid::class, DatabasePictureOfDay::class], version = 2)
