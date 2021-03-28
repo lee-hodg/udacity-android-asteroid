@@ -8,12 +8,18 @@ import com.udacity.asteroidradar.database.getDatabase
 import com.udacity.asteroidradar.repository.AsteroidRepository
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.lang.Exception
+
+enum class AsteroidApiStatus { LOADING, ERROR, DONE }
 
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val database = getDatabase(application)
     private val asteroidsRepository = AsteroidRepository(database)
+
+    private val _status = MutableLiveData<AsteroidApiStatus>()
+    val status: LiveData<AsteroidApiStatus> get() = _status
 
     /**
      * This is the overflow menu filter. Start by showing all saved
@@ -59,7 +65,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      */
     init {
         viewModelScope.launch {
-            asteroidsRepository.refreshAsteroids()
+            try {
+                _status.value = AsteroidApiStatus.LOADING
+                asteroidsRepository.refreshAsteroids()
+            }catch(e:Exception){
+                Timber.e("Could not load asteroids $e")
+                _status.value = AsteroidApiStatus.ERROR
+            }finally {
+                _status.value = AsteroidApiStatus.DONE
+            }
         }
         viewModelScope.launch {
             asteroidsRepository.refreshPictureOfDay()

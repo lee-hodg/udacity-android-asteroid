@@ -12,11 +12,13 @@ import com.udacity.asteroidradar.database.asDomainModel
 import com.udacity.asteroidradar.domain.Asteroid
 import com.udacity.asteroidradar.domain.PictureOfDay
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 fun getFormattedDate(days: Int=0): String{
@@ -78,6 +80,9 @@ class AsteroidRepository(private val database: AsteroidDatabase) {
     suspend fun refreshAsteroids() {
         withContext(Dispatchers.IO) {
             try {
+//                runBlocking {
+//                    TimeUnit.SECONDS.sleep(10L)
+//                }
                 val today = getFormattedDate()
                 Timber.d("Request new asteroids w/ startDate $today")
                 val stringResponse = NasaApi.retrofitScalarService.getAsteroids(

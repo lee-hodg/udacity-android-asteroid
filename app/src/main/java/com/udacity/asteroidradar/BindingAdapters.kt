@@ -1,12 +1,15 @@
 package com.udacity.asteroidradar
 
+import android.view.View
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.net.toUri
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import com.udacity.asteroidradar.domain.Asteroid
+import com.udacity.asteroidradar.main.AsteroidApiStatus
 import com.udacity.asteroidradar.main.AsteroidListingAdapter
 
 @BindingAdapter("statusIcon")
@@ -94,4 +97,25 @@ fun bindImage(imgView: ImageView, imgUrl: String?) {
 fun bindRecyclerView(recyclerView: RecyclerView, data: List<Asteroid>?) {
     val adapter = recyclerView.adapter as AsteroidListingAdapter
     adapter.submitList(data)
+}
+
+/**
+ * This binding adapter displays the [AsteroidApiStatus] of the network request in progressbar.  When
+ * the request is loading, it displays a loading_animation.  If the request has an error, it
+ * displays a broken image to reflect the connection error.  When the request is finished, it
+ * hides the image view.
+ */
+@BindingAdapter("asteroidApiStatus")
+fun bindStatus(statusProgressBar: ProgressBar, status: AsteroidApiStatus?) {
+    when (status) {
+        AsteroidApiStatus.LOADING -> {
+            statusProgressBar.visibility = View.VISIBLE
+        }
+        AsteroidApiStatus.ERROR -> {
+            statusProgressBar.visibility = View.VISIBLE
+        }
+        AsteroidApiStatus.DONE -> {
+            statusProgressBar.visibility = View.GONE
+        }
+    }
 }
