@@ -15,7 +15,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val database = getDatabase(application)
     private val asteroidsRepository = AsteroidRepository(database)
 
-    var asteroids = asteroidsRepository.asteroids
+    /**
+     * This is the overflow menu filter. Start by showing all saved
+     */
+    private val _filterSelected = MutableLiveData<AsteroidApiFilter>(AsteroidApiFilter.SHOW_SAVED)
+    val filterSelected: LiveData<AsteroidApiFilter>
+        get() = _filterSelected
+
+
+    val asteroids = Transformations.switchMap(_filterSelected) {
+        when (it!!) {
+            AsteroidApiFilter.SHOW_WEEK -> asteroidsRepository.weeklyAsteroids
+            AsteroidApiFilter.SHOW_TODAY -> asteroidsRepository.todayAsteroids
+            else -> asteroidsRepository.asteroids
+        }
+    }
 
     val pictureOfDay = asteroidsRepository.pictureOfDay
 
@@ -39,29 +53,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun onAsteroidClicked(asteroid: Asteroid) {
         _navigateToDetail.value = asteroid
     }
-
-    fun doFilter(filter: AsteroidApiFilter?) {
-        Timber.d("Do the filter with ${filter.toString()}")
-        when(filter){
-            AsteroidApiFilter.SHOW_WEEK -> {
-                asteroids = asteroidsRepository.weeklyAsteroids
-            }
-            AsteroidApiFilter.SHOW_SAVED -> {
-                asteroids = asteroidsRepository.asteroids
-            }
-            AsteroidApiFilter.SHOW_TODAY -> {
-                asteroids = asteroidsRepository.todayAsteroids
-            }
-        }
-
-    }
-
-    /**
-     * This is the overflow menu filter. Start by showing all saved
-     */
-    private val _filterSelected = MutableLiveData<AsteroidApiFilter>(AsteroidApiFilter.SHOW_SAVED)
-    val filterSelected: LiveData<AsteroidApiFilter>
-        get() = _filterSelected
 
     /**
      * init{} is called immediately when this ViewModel is created.

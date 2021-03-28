@@ -58,11 +58,6 @@ class MainFragment : Fragment() {
             }
         })
 
-        // If the filterSelected changes update the source of androids from repository
-        viewModel.filterSelected.observe(viewLifecycleOwner, Observer { filter ->
-            viewModel.doFilter(filter)
-        })
-
         return binding.root
     }
 
